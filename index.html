@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Freezer Drum Location Tracker | Kinsale Site</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --lilly-red: #D31710;
+    --lilly-pink: #FFDAD4;
+    --lilly-black: #191919;
+    --lilly-white: #FFFFFF;
+    --bold-brown: #501009;
+    --vibrant-coral: #FD9485;
+    --neutral-rose: #F9EEED;
+    --neutral-rose-tint: #FBF5F4;
+    --bold-green: #00422C;
+    --neutral-sage: #BEEBE6;
+    --neutral-sage-tint: #F0F8F6;
+    --bold-blue: #003A6C;
+    --vibrant-azure: #86B3F2;
+    --neutral-stone: #D8E4EC;
+    --neutral-stone-tint: #F3F7FA;
+    --bold-gray: #818C94;
+    --vibrant-gold: #F4C003;
+    --neutral-cream: #F9F0E0;
+    --neutral-cream-tint: #FCF5ED;
+    --vibrant-orange: #FFDCC6;
+    --font-primary: 'IBM Plex Sans', sans-serif;
+    --border-radius: 4px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: var(--font-primary); background: var(--neutral-stone-tint); color: var(--lilly-black); min-height: 100vh; }
+
+  .header { background: var(--lilly-white); border-bottom: 3px solid var(--lilly-red); padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+  .header-left { display: flex; align-items: center; gap: 16px; }
+  .logo { color: var(--lilly-red); font-weight: 700; font-size: 1.5rem; font-style: italic; }
+  .header-title { font-size: 1.1rem; font-weight: 600; }
+  .header-subtitle { font-size: 0.8rem; color: var(--bold-gray); }
+  .header-right { display: flex; align-items: center; gap: 12px; }
+  .freezer-select { padding: 8px 16px; border: 2px solid var(--lilly-red); border-radius: var(--border-radius); font-family: var(--font-primary); font-weight: 600; font-size: 0.9rem; background: var(--lilly-white); color: var(--lilly-red); cursor: pointer; }
+
+  .tabs { display: flex; background: var(--lilly-white); border-bottom: 1px solid var(--neutral-stone); padding: 0 24px; overflow-x: auto; }
+  .tab { padding: 12px 20px; font-weight: 600; font-size: 0.85rem; cursor: pointer; border-bottom: 3px solid transparent; color: var(--bold-gray); transition: all 0.2s; white-space: nowrap; }
+  .tab:hover { color: var(--lilly-red); }
+  .tab.active { color: var(--lilly-red); border-bottom-color: var(--lilly-red); }
+
+  .main { padding: 24px; max-width: 1400px; margin: 0 auto; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  .stats-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(155px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .stat-card { background: var(--lilly-white); border-radius: var(--border-radius); padding: 14px; border-left: 4px solid var(--lilly-red); }
+  .stat-card.green { border-left-color: var(--bold-green); }
+  .stat-card.blue { border-left-color: var(--bold-blue); }
+  .stat-card.gold { border-left-color: var(--vibrant-gold); }
+  .stat-label { font-size: 0.7rem; color: var(--bold-gray); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+  .stat-value { font-size: 1.5rem; font-weight: 700; margin-top: 2px; }
+  .stat-sub { font-size: 0.7rem; color: var(--bold-gray); margin-top: 2px; }
+
+  .batch-legend-bar { background: var(--lilly-white); border-radius: var(--border-radius); padding: 12px 20px; margin-bottom: 16px; border: 1px solid var(--neutral-stone); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .bl-title { font-size: 0.8rem; font-weight: 700; margin-right: 6px; }
+  .batch-chip { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 12px; font-size: 0.72rem; font-weight: 600; cursor: pointer; border: 2px solid transparent; transition: all 0.15s; }
+  .batch-chip:hover { transform: scale(1.05); }
+  .batch-chip.active-filter { border-color: var(--lilly-black); box-shadow: 0 0 0 2px rgba(25,25,25,0.15); }
+  .batch-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+  .freezer-container { background: var(--lilly-white); border-radius: var(--border-radius); padding: 24px; margin-bottom: 20px; border: 1px solid var(--neutral-stone); }
+  .freezer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 12px; }
+  .freezer-title { font-size: 1.1rem; font-weight: 700; }
+  .legend { display: flex; gap: 14px; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 0.75rem; color: var(--bold-gray); }
+  .legend-dot { width: 14px; height: 14px; border-radius: 3px; }
+  .legend-dot.empty { background: var(--neutral-stone-tint); border: 2px dashed var(--neutral-stone); }
+  .legend-dot.partial { background: var(--vibrant-azure); }
+  .legend-dot.full { background: var(--bold-blue); }
+  .legend-dot.next { background: var(--bold-green); border: 2px solid #00633f; }
+
+  .freezer-visual { position: relative; background: linear-gradient(135deg, #e8f4fd 0%, #d0e8f7 100%); border: 3px solid var(--bold-blue); border-radius: 8px; padding: 20px; overflow-x: auto; }
+  .freezer-label-top { text-align: center; font-weight: 700; font-size: 0.85rem; color: var(--bold-blue); margin-bottom: 6px; letter-spacing: 1px; text-transform: uppercase; }
+  .lane-wrapper { margin-bottom: 14px; }
+  .lane-label { font-weight: 700; font-size: 0.8rem; color: var(--bold-brown); margin-bottom: 5px; display: flex; align-items: center; gap: 8px; }
+  .lane-label .arrow { color: var(--lilly-red); }
+  .lane { display: flex; gap: 5px; align-items: stretch; }
+  .pallet-slot { flex: 1; min-width: 72px; border: 2px dashed var(--neutral-stone); border-radius: 6px; padding: 5px; background: var(--lilly-white); cursor: pointer; transition: all 0.2s; position: relative; }
+  .pallet-slot:hover { border-color: var(--lilly-red); box-shadow: 0 2px 8px rgba(211,23,16,0.15); transform: translateY(-2px); }
+  .pallet-slot.has-drums { border-style: solid; border-color: var(--vibrant-azure); background: #f0f7ff; }
+  .pallet-slot.full { border-color: var(--bold-blue); background: #e0edf8; }
+  .pallet-slot.next-place { border-color: var(--bold-green); border-width: 3px; background: var(--neutral-sage-tint); animation: pulseGreen 2s infinite; }
+  @keyframes pulseGreen { 0%,100%{box-shadow:0 0 0 0 rgba(0,66,44,0.2)} 50%{box-shadow:0 0 0 6px rgba(0,66,44,0)} }
+  .slot-header { text-align: center; font-size: 0.6rem; font-weight: 700; color: var(--bold-gray); margin-bottom: 3px; }
+  .drum-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; }
+  .drum-cell { aspect-ratio: 1; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.42rem; font-weight: 600; transition: all 0.15s; min-height: 24px; }
+  .drum-cell.empty-drum { border: 1.5px dashed var(--neutral-stone); background: var(--neutral-stone-tint); color: var(--neutral-stone); }
+  .drum-cell.filled { color: var(--lilly-white); cursor: pointer; position: relative; }
+  .drum-cell.filled:hover { transform: scale(1.15); z-index: 2; filter: brightness(0.85); }
+  .drum-cell.highlight { outline: 3px solid var(--vibrant-gold) !important; outline-offset: 2px; transform: scale(1.2); box-shadow: 0 0 10px rgba(244,192,3,0.6); }
+  .drum-cell.dim { opacity: 0.2; }
+  .slot-count { text-align: center; font-size: 0.6rem; color: var(--bold-gray); margin-top: 3px; font-weight: 500; }
+  .aisle-divider { display: flex; align-items: center; justify-content: center; padding: 5px 0; }
+  .aisle-divider span { background: var(--neutral-rose); color: var(--lilly-red); padding: 3px 14px; border-radius: 12px; font-size: 0.72rem; font-weight: 700; letter-spacing: 1px; }
+  .position-labels { display: flex; gap: 5px; padding: 0 0 4px 0; }
+  .position-labels span { flex: 1; min-width: 72px; text-align: center; font-size: 0.62rem; font-weight: 700; color: var(--bold-blue); }
+
+  .actions-panel { background: var(--lilly-white); border-radius: var(--border-radius); padding: 24px; margin-bottom: 20px; border: 1px solid var(--neutral-stone); }
+  .actions-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; }
+  .action-card { border: 2px solid var(--neutral-stone); border-radius: 8px; padding: 16px; }
+  .action-card h3 { font-size: 0.92rem; font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+  .action-card p { font-size: 0.76rem; color: var(--bold-gray); margin-bottom: 12px; }
+  .form-group { margin-bottom: 10px; }
+  .form-group label { display: block; font-size: 0.76rem; font-weight: 600; margin-bottom: 3px; }
+  .form-group input, .form-group select { width: 100%; padding: 8px 10px; border: 2px solid var(--neutral-stone); border-radius: var(--border-radius); font-family: var(--font-primary); font-size: 0.85rem; }
+  .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--lilly-red); }
+  .btn { padding: 9px 18px; border: none; border-radius: var(--border-radius); font-family: var(--font-primary); font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+  .btn-primary { background: var(--lilly-red); color: var(--lilly-white); }
+  .btn-primary:hover { background: var(--bold-brown); }
+  .btn-green { background: var(--bold-green); color: var(--lilly-white); }
+  .btn-green:hover { background: #003320; }
+  .btn-outline { background: var(--lilly-white); color: var(--lilly-red); border: 2px solid var(--lilly-red); }
+  .btn-outline:hover { background: var(--lilly-pink); }
+  .search-result { margin-top: 10px; padding: 10px; border-radius: var(--border-radius); font-size: 0.82rem; display: none; }
+  .search-result.found { display: block; background: var(--neutral-sage-tint); border: 2px solid var(--bold-green); color: var(--bold-green); }
+  .search-result.not-found { display: block; background: var(--lilly-pink); border: 2px solid var(--lilly-red); color: var(--lilly-red); }
+
+  .log-container { background: var(--lilly-white); border-radius: var(--border-radius); padding: 24px; border: 1px solid var(--neutral-stone); }
+  .log-container h3 { font-size: 1rem; font-weight: 700; margin-bottom: 14px; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.76rem; }
+  th { background: var(--neutral-stone-tint); padding: 8px 10px; text-align: left; font-weight: 600; color: var(--bold-gray); text-transform: uppercase; letter-spacing: 0.5px; font-size: 0.66rem; border-bottom: 2px solid var(--neutral-stone); }
+  td { padding: 8px 10px; border-bottom: 1px solid var(--neutral-stone); }
+  tr:hover td { background: var(--neutral-stone-tint); }
+  .badge { padding: 2px 8px; border-radius: 10px; font-size: 0.66rem; font-weight: 600; }
+  .badge-in { background: var(--neutral-sage); color: var(--bold-green); }
+  .badge-out { background: var(--lilly-pink); color: var(--lilly-red); }
+
+  .guide-section { background: var(--lilly-white); border-radius: var(--border-radius); padding: 22px; margin-bottom: 18px; border: 1px solid var(--neutral-stone); }
+  .guide-section h3 { font-size: 1.02rem; font-weight: 700; margin-bottom: 10px; color: var(--lilly-red); display: flex; align-items: center; gap: 8px; }
+  .guide-section p, .guide-section li { font-size: 0.86rem; line-height: 1.65; }
+  .analogy-box { background: var(--neutral-cream-tint); border-left: 4px solid var(--vibrant-gold); padding: 14px; margin: 10px 0; border-radius: 0 var(--border-radius) var(--border-radius) 0; font-size: 0.86rem; }
+  .analogy-box strong { color: var(--bold-brown); }
+  .abbrev-table { width: 100%; margin: 10px 0; }
+  .abbrev-table td { padding: 5px 10px; font-size: 0.82rem; }
+  .abbrev-table td:first-child { font-weight: 700; color: var(--lilly-red); width: 90px; }
+  .step-box { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 12px; padding: 12px; background: var(--neutral-stone-tint); border-radius: 8px; }
+  .step-number { background: var(--lilly-red); color: var(--lilly-white); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; font-size: 0.85rem; }
+  .step-content { flex: 1; }
+  .step-content strong { color: var(--lilly-black); }
+  .step-content p { margin-top: 3px; font-size: 0.8rem; color: var(--bold-gray); }
+
+  .dash-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 18px; margin-bottom: 20px; }
+  .dash-card { background: var(--lilly-white); border-radius: var(--border-radius); padding: 18px; border: 1px solid var(--neutral-stone); }
+  .dash-card h3 { font-size: 0.92rem; font-weight: 700; margin-bottom: 12px; }
+  .gauge-row { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-top: 10px; }
+  .gauge-item { text-align: center; }
+  .gauge-ring { width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: 700; margin: 0 auto 5px; }
+  .gauge-label { font-size: 0.72rem; color: var(--bold-gray); font-weight: 600; }
+
+  .toast { position: fixed; bottom: 24px; right: 24px; padding: 14px 24px; border-radius: 8px; font-weight: 600; font-size: 0.88rem; color: var(--lilly-white); z-index: 1000; transform: translateY(100px); opacity: 0; transition: all 0.3s; max-width: 420px; }
+
+  /* CAPACITY ALERTS */
+  .alert-container { margin-bottom: 16px; display: flex; flex-direction: column; gap: 8px; }
+  .capacity-alert { padding: 12px 18px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; animation: alertSlideIn 0.4s ease-out; }
+  @keyframes alertSlideIn { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
+  .capacity-alert .alert-content { display: flex; align-items: center; gap: 10px; flex: 1; }
+  .capacity-alert .alert-icon { font-size: 1.3rem; flex-shrink: 0; }
+  .capacity-alert .alert-text { font-size: 0.82rem; font-weight: 600; }
+  .capacity-alert .alert-sub { font-size: 0.72rem; font-weight: 400; opacity: 0.85; }
+  .capacity-alert .alert-actions { display: flex; gap: 8px; flex-shrink: 0; }
+  .capacity-alert .alert-btn { padding: 6px 14px; border-radius: var(--border-radius); font-family: var(--font-primary); font-weight: 600; font-size: 0.76rem; cursor: pointer; border: none; transition: all 0.15s; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; }
+  .alert-warning { background: #FFF3CD; border: 2px solid #FFBF00; color: #664D03; }
+  .alert-warning .alert-btn { background: #FFBF00; color: #664D03; }
+  .alert-warning .alert-btn:hover { background: #E6AC00; }
+  .alert-high { background: #FFE0CC; border: 2px solid #E8720C; color: #6B3409; }
+  .alert-high .alert-btn { background: #E8720C; color: white; }
+  .alert-high .alert-btn:hover { background: #CC6300; }
+  .alert-critical { background: var(--lilly-pink); border: 2px solid var(--lilly-red); color: var(--bold-brown); }
+  .alert-critical .alert-btn { background: var(--lilly-red); color: white; }
+  .alert-critical .alert-btn:hover { background: var(--bold-brown); }
+  .alert-dismiss { background: transparent; border: 1px solid currentColor; color: inherit; opacity: 0.7; padding: 4px 10px; border-radius: var(--border-radius); cursor: pointer; font-size: 0.7rem; font-family: var(--font-primary); }
+  .alert-dismiss:hover { opacity: 1; }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { background: var(--bold-green); }
+  .toast.error { background: var(--lilly-red); }
+  .toast.info { background: var(--bold-blue); }
+  .footer { text-align: center; padding: 14px 24px; font-size: 0.73rem; color: var(--bold-gray); border-top: 1px solid var(--neutral-stone); background: var(--lilly-white); margin-top: 36px; }
+  .footer a { color: var(--lilly-red); text-decoration: none; font-weight: 600; }
+  .tooltip-popup { position: fixed; background: var(--lilly-black); color: var(--lilly-white); padding: 10px 14px; border-radius: 6px; font-size: 0.76rem; z-index: 999; pointer-events: none; max-width: 250px; line-height: 1.4; display: none; }
+  .tooltip-popup::after { content: ''; position: absolute; top: 100%; left: 20px; border: 6px solid transparent; border-top-color: var(--lilly-black); }
+
+  @media print {
+    body { background: white !important; }
+    .header, .tabs, .actions-panel, .toast, .footer, .print-controls, .batch-legend-bar, .no-print { display: none !important; }
+    .tab-content { display: block !important; }
+    .main { padding: 0; }
+    .freezer-container { border: 2px solid #333; page-break-inside: avoid; }
+    .print-only { display: block !important; }
+  }
+  .print-only { display: none; }
+  @media (max-width: 768px) {
+    .header { padding: 12px 16px; }
+    .main { padding: 14px; }
+    .pallet-slot { min-width: 56px; }
+    .drum-cell { min-height: 18px; font-size: 0.36rem; }
+    .actions-grid { grid-template-columns: 1fr; }
+    .stats-bar { grid-template-columns: repeat(2, 1fr); }
+    .dash-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="tooltip-popup" id="tooltip"></div>
+<div class="toast" id="toast"></div>
+
+<div class="header">
+  <div class="header-left">
+    <span class="logo">Lilly</span>
+    <div>
+      <div class="header-title">Freezer Drum Location Tracker</div>
+      <div class="header-subtitle">Kinsale Site — Materials Management</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <select class="freezer-select" id="freezerSelect" onchange="switchFreezer()">
+      <option value="F71">Freezer 71</option>
+      <option value="F72">Freezer 72</option>
+      <option value="F73">Freezer 73</option>
+    </select>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('tracker')">📦 Tracker</div>
+  <div class="tab" onclick="switchTab('guide')">📖 How It Works</div>
+  <div class="tab" onclick="switchTab('log')">📋 Movement Log</div>
+  <div class="tab" onclick="switchTab('snapshot')">🖨️ Shift Snapshot</div>
+  <div class="tab" onclick="switchTab('dashboard')">📊 Utilisation</div>
+</div>
+
+<div class="main">
+  <!-- ===== TRACKER ===== -->
+  <div class="tab-content active" id="tab-tracker">
+    <div class="stats-bar">
+      <div class="stat-card"><div class="stat-label">Total drums</div><div class="stat-value" id="statTotal">0</div><div class="stat-sub">in this freezer</div></div>
+      <div class="stat-card green"><div class="stat-label">Capacity used</div><div class="stat-value" id="statCapacity">0%</div><div class="stat-sub">of 88 max</div></div>
+      <div class="stat-card blue"><div class="stat-label">Next placement</div><div class="stat-value" id="statNext">—</div><div class="stat-sub" id="statNextSub">position</div></div>
+      <div class="stat-card gold"><div class="stat-label">Available</div><div class="stat-value" id="statAvail">88</div><div class="stat-sub">drum slots free</div></div>
+      <div class="stat-card"><div class="stat-label">Batches stored</div><div class="stat-value" id="statBatches">0</div><div class="stat-sub">in this freezer</div></div>
+      <div class="stat-card" style="border-left-color:var(--bold-blue); background:var(--neutral-stone-tint);"><div class="stat-label">All freezers available</div><div class="stat-value" id="statAllAvail">264</div><div class="stat-sub" id="statAllAvailSub">of 264 total slots</div></div>
+    </div>
+
+    <!-- CAPACITY ALERTS -->
+    <div class="alert-container" id="alertContainer"></div>
+
+    <div class="batch-legend-bar" id="batchLegend">
+      <span class="bl-title">🎨 Batch Filter:</span>
+      <span style="font-size:0.75rem; color:var(--bold-gray);">Click a batch to highlight on map</span>
+    </div>
+
+    <div class="freezer-container">
+      <div class="freezer-header">
+        <div class="freezer-title" id="freezerMapTitle">Freezer 71 — Floor Plan</div>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-dot empty"></div> Empty</div>
+          <div class="legend-item"><div class="legend-dot partial"></div> Partial</div>
+          <div class="legend-item"><div class="legend-dot full"></div> Full</div>
+          <div class="legend-item"><div class="legend-dot next"></div> Next Place</div>
+        </div>
+      </div>
+      <div class="freezer-visual">
+        <div class="freezer-label-top">❄️ Freezer Interior</div>
+        <div class="position-labels" id="posLabels" style="margin-left:85px;"></div>
+        <div class="lane-wrapper">
+          <div class="lane-label"><span class="arrow">▶</span> Lane A — Fill from BACK (P11) → FRONT (P1)</div>
+          <div style="display:flex;align-items:stretch;gap:0;">
+            <div style="writing-mode:vertical-rl;text-orientation:mixed;transform:rotate(180deg);background:var(--lilly-pink);border:2px solid var(--lilly-red);border-radius:8px 0 0 8px;padding:6px 5px;font-size:0.72rem;font-weight:700;color:var(--lilly-red);display:flex;align-items:center;justify-content:center;min-width:34px;letter-spacing:1px;">🚪 DOOR</div>
+            <div class="lane" id="laneA" style="flex:1;"></div>
+            <div style="writing-mode:vertical-rl;text-orientation:mixed;transform:rotate(180deg);background:var(--neutral-stone-tint);border:2px solid var(--neutral-stone);border-radius:0 8px 8px 0;padding:6px 5px;font-size:0.68rem;font-weight:700;color:var(--bold-gray);display:flex;align-items:center;justify-content:center;min-width:28px;">BACK WALL</div>
+          </div>
+        </div>
+        <div class="aisle-divider"><span>↔ CENTRAL AISLE ↔</span></div>
+        <div class="lane-wrapper">
+          <div class="lane-label"><span class="arrow">▶</span> Lane B — Fill from BACK (P11) → FRONT (P1)</div>
+          <div style="display:flex;align-items:stretch;gap:0;">
+            <div style="writing-mode:vertical-rl;text-orientation:mixed;transform:rotate(180deg);background:var(--lilly-pink);border:2px solid var(--lilly-red);border-radius:8px 0 0 8px;padding:6px 5px;font-size:0.72rem;font-weight:700;color:var(--lilly-red);display:flex;align-items:center;justify-content:center;min-width:34px;letter-spacing:1px;">🚪 DOOR</div>
+            <div class="lane" id="laneB" style="flex:1;"></div>
+            <div style="writing-mode:vertical-rl;text-orientation:mixed;transform:rotate(180deg);background:var(--neutral-stone-tint);border:2px solid var(--neutral-stone);border-radius:0 8px 8px 0;padding:6px 5px;font-size:0.68rem;font-weight:700;color:var(--bold-gray);display:flex;align-items:center;justify-content:center;min-width:28px;">BACK WALL</div>
+          </div>
+        </div>
+        <div class="position-labels" id="posLabels2" style="margin-left:85px;"></div>
+      </div>
+    </div>
+
+    <div class="actions-panel">
+      <div class="actions-grid">
+        <div class="action-card">
+          <h3>🔍 Find a Drum (by SU)</h3>
+          <p>Enter the SU (Storage Unit) number to locate the drum on the map.</p>
+          <div class="form-group"><label>Storage Unit (SU) Number</label><input type="text" id="searchSU" placeholder="e.g. 6086037" onkeyup="if(event.key==='Enter')searchDrum()"></div>
+          <button class="btn btn-primary" onclick="searchDrum()">🔍 Find Drum</button>
+          <div class="search-result" id="searchResult"></div>
+        </div>
+        <div class="action-card">
+          <h3>📥 Place Drum Into Freezer</h3>
+          <p>Select the batch number. Each batch typically contains 5 drums.</p>
+          <div class="form-group"><label>Storage Unit (SU) Number</label><input type="text" id="placeSU" placeholder="e.g. 6086037"></div>
+          <div class="form-group"><label>Batch Number</label>
+            <select id="placeBatch"><option value="">— Select Batch —</option></select>
+          </div>
+          <div class="form-group" id="customBatchGroup" style="display:none;">
+            <label>New Batch Number</label><input type="text" id="customBatch" placeholder="e.g. D796298">
+          </div>
+          <button class="btn btn-green" onclick="placeDrum()">📥 Place Drum</button>
+        </div>
+        <div class="action-card">
+          <h3>📤 Remove Drum From Freezer</h3>
+          <p>Enter the SU to remove. System logs the movement.</p>
+          <div class="form-group"><label>Storage Unit (SU) Number</label><input type="text" id="removeSU" placeholder="e.g. 6086037" onkeyup="if(event.key==='Enter')removeDrum()"></div>
+          <button class="btn btn-primary" onclick="removeDrum()">📤 Remove Drum</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== GUIDE ===== -->
+  <div class="tab-content" id="tab-guide">
+    <div class="guide-section">
+      <h3>📖 Abbreviations & Key Terms</h3>
+      <table class="abbrev-table">
+        <tr><td>SU</td><td><strong>Storage Unit</strong> — The unique 7-digit identifier for each drum in SAP (e.g., 6086037)</td></tr>
+        <tr><td>LT10</td><td><strong>Transfer Order Creation</strong> — SAP transaction used to move materials between storage bins</td></tr>
+        <tr><td>FIFO</td><td><strong>First In, First Out</strong> — The oldest drum in the freezer is the first one removed</td></tr>
+        <tr><td>Batch</td><td>A production lot identified by "D" followed by 6 digits (e.g., D796298) — typically 5 drums per batch</td></tr>
+        <tr><td>Lane</td><td>One side of the freezer — 2 lanes per freezer (A and B), separated by a central aisle</td></tr>
+        <tr><td>Position</td><td>A numbered pallet spot — P01 (nearest door) through P11 (back wall)</td></tr>
+        <tr><td>Slot</td><td>An individual drum position on a pallet — 4 slots per pallet (2×2 grid)</td></tr>
+        <tr><td>F71/72/73</td><td><strong>Freezer 71, 72, 73</strong> — The three freezers at the Kinsale site</td></tr>
+      </table>
+    </div>
+    <div class="guide-section">
+      <h3>💡 The Analogy — Think of It Like a Car Park</h3>
+      <div class="analogy-box">
+        <strong>Imagine each freezer is a small car park with 2 rows of 11 spaces.</strong><br><br>
+        Each "parking space" is a pallet position. Each pallet holds 4 drums — like 4 motorbikes in one car space. You have 3 car parks (Freezer 71, 72, 73).<br><br>
+        <strong>The problem before:</strong> Every motorbike got the same ticket number regardless of which car park or space it was in. Finding one meant searching all 3 car parks in the cold.<br><br>
+        <strong>The solution:</strong> Now every space has a unique address (e.g., "F71, Lane A, Position 7, Slot 3"). Finding any motorbike is instant — just check the map.
+      </div>
+    </div>
+    <div class="guide-section">
+      <h3>🎨 Batch Colour-Coding</h3>
+      <div class="analogy-box">
+        <strong>Think of it like colour-coded parking permits.</strong><br><br>
+        All drums are the same product, but different batches get different colours. At a glance you can see "all the red drums are Batch D796298, the blue ones are D796315." Click a batch chip above the map to highlight just that batch — everything else dims. Since each batch is 5 drums, you can quickly confirm all 5 are accounted for.
+      </div>
+    </div>
+    <div class="guide-section">
+      <h3>📐 The Naming System</h3>
+      <p>Every drum location follows a simple address:</p>
+      <div style="text-align:center; margin:14px 0;">
+        <span style="display:inline-block;background:var(--bold-blue);color:white;padding:8px 16px;border-radius:6px;font-weight:700;font-size:1rem;">F71 · Lane A · P07 · Slot 3 → "F71-A-P07-S3"</span>
+      </div>
+      <div class="analogy-box">
+        <strong>Reading the address:</strong><br>
+        <strong>F71</strong> = Freezer 71 (or 72 / 73)<br>
+        <strong>A</strong> = Lane A or B<br>
+        <strong>P07</strong> = Position 7 (P01 = door on left, P11 = back wall on right)<br>
+        <strong>S3</strong> = Slot 3 on the pallet (1–4 in a 2×2 grid)
+      </div>
+    </div>
+    <div class="guide-section">
+      <h3>📥 How to Place Drums</h3>
+      <div class="step-box"><div class="step-number">1</div><div class="step-content"><strong>Check the Tracker</strong><p>The green-highlighted pallet shows the next placement position. System fills from the BACK (P11, right) toward the DOOR (P01, left).</p></div></div>
+      <div class="step-box"><div class="step-number">2</div><div class="step-content"><strong>Enter SU & select Batch</strong><p>Type the drum's SU number and pick the batch from the dropdown (or add a new batch). The colour is assigned automatically.</p></div></div>
+      <div class="step-box"><div class="step-number">3</div><div class="step-content"><strong>Physically place the drum</strong><p>Take it to the assigned position. The map updates so others can see it.</p></div></div>
+      <div class="step-box"><div class="step-number">4</div><div class="step-content"><strong>Process LT10 in SAP</strong><p>Use the new bin format (e.g., F71-A-P07) instead of the generic freezer bin.</p></div></div>
+      <div class="analogy-box"><strong>Why fill from the back?</strong> Like stacking plates — newest at the back, oldest nearest the door. Ensures FIFO and minimises time in the cold.</div>
+    </div>
+    <div class="guide-section">
+      <h3>📤 How to Remove Drums</h3>
+      <div class="step-box"><div class="step-number">1</div><div class="step-content"><strong>Search for the SU</strong><p>The map highlights the exact drum with a gold glow.</p></div></div>
+      <div class="step-box"><div class="step-number">2</div><div class="step-content"><strong>Go directly to it</strong><p>The address tells you freezer, lane, and position.</p></div></div>
+      <div class="step-box"><div class="step-number">3</div><div class="step-content"><strong>Remove and log it</strong><p>Enter the SU in "Remove Drum." Map and log update immediately.</p></div></div>
+    </div>
+    <div class="guide-section">
+      <h3>📊 Capacity Summary</h3>
+      <div class="analogy-box"><strong>Per Freezer:</strong> 2 Lanes × 11 Positions × 4 Slots = <strong>88 drums</strong><br><strong>Total (3 Freezers):</strong> 88 × 3 = <strong>264 drums</strong></div>
+    </div>
+    <div class="guide-section">
+      <h3>🚨 Capacity Alert System</h3>
+      <div class="analogy-box">
+        <strong>Think of it like a fuel warning light in a car.</strong><br><br>
+        When your petrol tank drops below a quarter, you get an amber light. If you keep going, it turns red. Same idea here — but in reverse, because the freezer is filling up rather than emptying out.
+      </div>
+      <p>The system monitors all 3 freezers continuously. When capacity reaches a threshold, an alert banner appears on the Tracker tab and an email is automatically prepared to send to the DigiApps team.</p>
+      <table class="abbrev-table" style="margin-top:12px;">
+        <tr><td style="color:#FFBF00;">🟡 85%</td><td><strong>WARNING</strong> — Capacity threshold reached. Monitor closely and consider redistributing drums across freezers.</td></tr>
+        <tr><td style="color:#E8720C;">🟠 90%</td><td><strong>HIGH</strong> — Approaching full capacity. Plan redistribution or expedite outgoing movements.</td></tr>
+        <tr><td style="color:var(--lilly-red);">🔴 95%</td><td><strong>CRITICAL</strong> — Freezer nearly full. Immediate action required — only a few slots remaining.</td></tr>
+      </table>
+      <div class="analogy-box" style="margin-top:12px;">
+        <strong>How the email works:</strong> When a new threshold is crossed, the system automatically opens your email client with a pre-filled message to DigiApps@elililly.onmicrosoft.com. The email includes the freezer name, current fill level, available slots, and a status summary of all 3 freezers. You just hit "Send." Each tier only triggers once per freezer to avoid repeated emails — the alert resets if capacity drops below the threshold.
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== LOG ===== -->
+  <div class="tab-content" id="tab-log">
+    <div class="log-container">
+      <h3>📋 Drum Movement Log</h3>
+      <div style="margin-bottom:14px;display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn btn-outline" onclick="exportLog()">⬇ Export CSV</button>
+        <button class="btn btn-outline" onclick="clearLog()">🗑 Clear Log</button>
+      </div>
+      <div style="overflow-x:auto;">
+        <table><thead><tr><th>Time</th><th>Action</th><th>SU Number</th><th>Batch</th><th>Freezer</th><th>Location</th></tr></thead>
+        <tbody id="logBody"><tr><td colspan="6" style="text-align:center;color:var(--bold-gray);padding:24px;">No movements logged yet</td></tr></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SNAPSHOT ===== -->
+  <div class="tab-content" id="tab-snapshot">
+    <div class="guide-section">
+      <h3>🖨️ Shift Snapshot — Printable Quick-Reference</h3>
+      <p>Print a one-page summary to carry into the freezer — no screen required.</p>
+      <div class="analogy-box"><strong>Like a restaurant table plan.</strong> Print the seating chart before service so you know what's where without checking a screen.</div>
+      <div class="print-controls">
+        <button class="btn btn-primary" onclick="window.print()">🖨️ Print Snapshot</button>
+        <button class="btn btn-outline" onclick="generateSnapshotTable()">🔄 Refresh Data</button>
+      </div>
+    </div>
+    <div id="snapshotContent">
+      <div class="print-only" style="text-align:center;padding:10px;border-bottom:2px solid var(--lilly-red);margin-bottom:14px;">
+        <span style="color:var(--lilly-red);font-weight:700;font-size:1.2rem;font-style:italic;">Lilly</span>
+        <span style="font-weight:700;font-size:1rem;margin-left:12px;">Freezer Drum Snapshot</span>
+      </div>
+      <div class="guide-section" id="snapshotMeta"></div>
+      <div class="guide-section"><h3>📋 Drum Inventory by Position</h3><div style="overflow-x:auto;"><table><thead><tr><th>Lane</th><th>Position</th><th>Slot</th><th>SU Number</th><th>Batch</th></tr></thead><tbody id="snapshotBody"></tbody></table></div></div>
+      <div class="guide-section"><h3>📊 Batch Breakdown</h3><div id="snapshotBatchBreakdown"></div></div>
+    </div>
+  </div>
+
+  <!-- ===== DASHBOARD ===== -->
+  <div class="tab-content" id="tab-dashboard">
+    <div class="stats-bar">
+      <div class="stat-card"><div class="stat-label">Freezer 71</div><div class="stat-value" id="dashF71Pct">0%</div><div class="stat-sub" id="dashF71Count">0 / 88</div></div>
+      <div class="stat-card green"><div class="stat-label">Freezer 72</div><div class="stat-value" id="dashF72Pct">0%</div><div class="stat-sub" id="dashF72Count">0 / 88</div></div>
+      <div class="stat-card blue"><div class="stat-label">Freezer 73</div><div class="stat-value" id="dashF73Pct">0%</div><div class="stat-sub" id="dashF73Count">0 / 88</div></div>
+      <div class="stat-card gold"><div class="stat-label">Combined</div><div class="stat-value" id="dashTotalPct">0%</div><div class="stat-sub" id="dashTotalCount">0 / 264</div></div>
+      <div class="stat-card"><div class="stat-label">Movements today</div><div class="stat-value" id="dashMovements">0</div><div class="stat-sub">in + out</div></div>
+      <div class="stat-card" style="border-left-color:var(--bold-blue); background:var(--neutral-stone-tint);"><div class="stat-label">All freezers available</div><div class="stat-value" id="dashAllAvail">264</div><div class="stat-sub" id="dashAllAvailSub">of 264 total slots</div></div>
+    </div>
+    <div class="dash-grid">
+      <div class="dash-card">
+        <h3>🎯 Capacity Gauges</h3>
+        <p style="font-size:0.76rem;color:var(--bold-gray);margin-bottom:10px;">Like fuel gauges — see fill level per freezer at a glance.</p>
+        <div class="gauge-row">
+          <div class="gauge-item"><div class="gauge-ring" id="gaugeF71">0%</div><div class="gauge-label">Freezer 71</div></div>
+          <div class="gauge-item"><div class="gauge-ring" id="gaugeF72">0%</div><div class="gauge-label">Freezer 72</div></div>
+          <div class="gauge-item"><div class="gauge-ring" id="gaugeF73">0%</div><div class="gauge-label">Freezer 73</div></div>
+          <div class="gauge-item"><div class="gauge-ring" id="gaugeTotal">0%</div><div class="gauge-label">Combined</div></div>
+        </div>
+      </div>
+      <div class="dash-card">
+        <h3>📦 Batch Distribution</h3>
+        <p style="font-size:0.76rem;color:var(--bold-gray);margin-bottom:10px;">Drum count per batch across all 3 freezers. Each batch should have 5 drums.</p>
+        <div id="batchDistChart"></div>
+      </div>
+      <div class="dash-card" style="grid-column:1/-1;">
+        <h3>📈 Utilisation Trend (Simulated 14 days)</h3>
+        <p style="font-size:0.76rem;color:var(--bold-gray);margin-bottom:10px;">In production this tracks real movements. Simulated data below shows the concept — like watching 3 petrol gauges over time.</p>
+        <div class="chart-container"><canvas id="trendChart" height="220"></canvas></div>
+      </div>
+      <div class="dash-card" style="grid-column:1/-1;">
+        <h3>🔥 Lane Heatmap — All Freezers</h3>
+        <p style="font-size:0.76rem;color:var(--bold-gray);margin-bottom:10px;">Darker = more drums. Like a thermal camera view — spot concentration and gaps instantly.</p>
+        <div id="heatmapContainer"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  Freezer Drum Location Tracker v3.1 · Kinsale Site Materials Management · DigiApps Support: <a href="mailto:DigiApps@elililly.onmicrosoft.com?subject=FreezerTracker%3A%20">Contact DigiApps Team</a>
+</div>
+
+<script>
+  // ===== BATCH COLOUR SYSTEM =====
+  const BATCH_COLOURS = [
+    '#D31710','#003A6C','#00422C','#7B2D8E','#C65102',
+    '#1A7A4C','#B8860B','#4A6FA5','#8B3A62','#2E8B57',
+    '#6B4C9A','#CD5C5C','#20639B','#9B2335','#3CAEA3'
+  ];
+  const batchRegistry = {};
+  let activeBatchFilter = null;
+
+  function getBatchColor(name) {
+    if (!name) return '#818C94';
+    if (!batchRegistry[name]) {
+      const idx = Object.keys(batchRegistry).length % BATCH_COLOURS.length;
+      batchRegistry[name] = { color: BATCH_COLOURS[idx] };
+    }
+    return batchRegistry[name].color;
+  }
+
+  // ===== DATA MODEL =====
+  const FREEZER_KEYS = ['F71','F72','F73'];
+  const freezers = {
+    F71: { name:'Freezer 71', lanes:{A:{},B:{}} },
+    F72: { name:'Freezer 72', lanes:{A:{},B:{}} },
+    F73: { name:'Freezer 73', lanes:{A:{},B:{}} }
+  };
+  for (const fk of FREEZER_KEYS) {
+    for (const lane of ['A','B']) {
+      for (let p=1;p<=11;p++) freezers[fk].lanes[lane]['P'+String(p).padStart(2,'0')]=[null,null,null,null];
+    }
+  }
+
+  let currentFreezer = 'F71';
+  let movementLog = [];
+  let highlightedDrum = null;
+  let utilisationHistory = [];
+
+  // ===== DEMO DATA (5 drums per batch) =====
+  function loadDemoData() {
+    const f71 = freezers.F71.lanes;
+    const b1='D796298', b2='D796315', b3='D796402', b4='D796478';
+    // Batch 1: 5 drums in F71
+    f71.A.P11 = [{su:'6086037',batch:b1},{su:'6086038',batch:b1},{su:'6086039',batch:b1},{su:'6086040',batch:b1}];
+    f71.A.P10 = [{su:'6086041',batch:b1},null,null,null];
+    // Batch 2: 5 drums in F71
+    f71.B.P11 = [{su:'6087112',batch:b2},{su:'6087113',batch:b2},{su:'6087114',batch:b2},{su:'6087115',batch:b2}];
+    f71.B.P10 = [{su:'6087116',batch:b2},null,null,null];
+    // Batch 3: 5 drums in F72
+    const f72 = freezers.F72.lanes;
+    f72.A.P11 = [{su:'6088201',batch:b3},{su:'6088202',batch:b3},{su:'6088203',batch:b3},{su:'6088204',batch:b3}];
+    f72.A.P10 = [{su:'6088205',batch:b3},null,null,null];
+    // Batch 4: 5 drums in F73
+    const f73 = freezers.F73.lanes;
+    f73.A.P11 = [{su:'6089330',batch:b4},{su:'6089331',batch:b4},{su:'6089332',batch:b4},{su:'6089333',batch:b4}];
+    f73.A.P10 = [{su:'6089334',batch:b4},null,null,null];
+
+    [b1,b2,b3,b4].forEach(b=>getBatchColor(b));
+    generateSimulatedHistory();
+  }
+
+  function generateSimulatedHistory() {
+    utilisationHistory = [];
+    const now = new Date();
+    let f71=6,f72=3,f73=2;
+    for (let d=13;d>=0;d--) {
+      const date=new Date(now); date.setDate(date.getDate()-d);
+      f71=Math.max(0,Math.min(88,f71+Math.floor(Math.random()*7)-3));
+      f72=Math.max(0,Math.min(88,f72+Math.floor(Math.random()*5)-2));
+      f73=Math.max(0,Math.min(88,f73+Math.floor(Math.random()*5)-2));
+      utilisationHistory.push({date:date.toLocaleDateString('en-IE',{day:'numeric',month:'short'}),f71,f72,f73});
+    }
+  }
+  loadDemoData();
+
+  // ===== BATCH DROPDOWN =====
+  function updateBatchDropdown() {
+    const sel=document.getElementById('placeBatch');
+    const cur=sel.value;
+    sel.innerHTML='<option value="">— Select Batch —</option>';
+    Object.keys(batchRegistry).forEach(b=>{
+      sel.innerHTML+=`<option value="${b}" style="color:${batchRegistry[b].color}">${b}</option>`;
+    });
+    sel.innerHTML+='<option value="__new__">+ Add New Batch...</option>';
+    sel.value=cur;
+    sel.onchange=function(){document.getElementById('customBatchGroup').style.display=this.value==='__new__'?'block':'none';};
+  }
+
+  // ===== RENDER =====
+  function render() {
+    renderStats(); renderMap(); renderBatchLegend(); updateBatchDropdown(); checkCapacityAlerts();
+  }
+
+  // ===== CAPACITY ALERT SYSTEM =====
+  const ALERT_TIERS = [
+    { threshold: 95, level: 'critical', label: '🔴 CRITICAL', css: 'alert-critical', desc: 'Freezer is nearly full — immediate action required' },
+    { threshold: 90, level: 'high', label: '🟠 HIGH', css: 'alert-high', desc: 'Approaching capacity — plan redistribution' },
+    { threshold: 85, level: 'warning', label: '🟡 WARNING', css: 'alert-warning', desc: 'Capacity threshold reached — monitor closely' }
+  ];
+  const ALERT_EMAIL = 'DigiApps@elililly.onmicrosoft.com';
+  // Track which alerts have been emailed per freezer+tier to avoid duplicate sends
+  const alertEmailSent = {}; // key: "F71-85" etc
+  const alertsDismissed = {}; // key: "F71-85"
+
+  function checkCapacityAlerts() {
+    const container = document.getElementById('alertContainer');
+    let html = '';
+    let newAlerts = [];
+
+    FREEZER_KEYS.forEach(fk => {
+      const count = countDrums(fk);
+      const pct = Math.round((count / 88) * 100);
+
+      // Reset sent/dismissed flags for tiers that capacity has dropped below
+      ALERT_TIERS.forEach(tier => {
+        const key = fk + '-' + tier.threshold;
+        if (pct < tier.threshold) {
+          delete alertEmailSent[key];
+          delete alertsDismissed[key];
+        }
+      });
+
+      // Find highest matching tier
+      for (const tier of ALERT_TIERS) {
+        if (pct >= tier.threshold) {
+          const key = fk + '-' + tier.threshold;
+          if (!alertsDismissed[key]) {
+            const fname = freezers[fk].name;
+            const isNew = !alertEmailSent[key];
+            html += buildAlertHTML(fk, fname, count, pct, tier, key, isNew);
+            if (isNew) {
+              newAlerts.push({ fk, fname, count, pct, tier, key });
+            }
+          }
+          break; // only show highest tier per freezer
+        }
+      }
+    });
+
+    container.innerHTML = html;
+
+    // Auto-trigger email for new alerts
+    if (newAlerts.length > 0) {
+      newAlerts.forEach(a => {
+        alertEmailSent[a.key] = true;
+        // Also mark lower tiers as sent
+        ALERT_TIERS.forEach(t => {
+          if (t.threshold <= a.tier.threshold) {
+            alertEmailSent[a.fk + '-' + t.threshold] = true;
+          }
+        });
+      });
+      // Open email for the most critical new alert
+      const top = newAlerts[0];
+      autoOpenAlertEmail(top.fname, top.count, top.pct, top.tier);
+    }
+  }
+
+  function buildAlertHTML(fk, fname, count, pct, tier, key, isNew) {
+    const emailHref = buildEmailHref(fname, count, pct, tier);
+    return `<div class="capacity-alert ${tier.css}">
+      <div class="alert-content">
+        <span class="alert-icon">${tier.label.split(' ')[0]}</span>
+        <div>
+          <div class="alert-text">${tier.label.split(' ')[1]} — ${fname} at ${pct}% capacity (${count} / 88 drums)</div>
+          <div class="alert-sub">${tier.desc}</div>
+        </div>
+      </div>
+      <div class="alert-actions">
+        <a class="alert-btn" href="${emailHref}" target="_blank">✉ Send Alert Email</a>
+        <button class="alert-dismiss" onclick="dismissAlert('${key}')">Dismiss</button>
+      </div>
+    </div>`;
+  }
+
+  function buildEmailHref(fname, count, pct, tier) {
+    const subject = encodeURIComponent(`FreezerTracker: ${tier.label} — ${fname} at ${pct}% capacity`);
+    const body = encodeURIComponent(
+      `FREEZER CAPACITY ALERT\n` +
+      `━━━━━━━━━━━━━━━━━━━━━━\n\n` +
+      `Alert Level: ${tier.label}\n` +
+      `Freezer: ${fname}\n` +
+      `Current Usage: ${count} / 88 drums (${pct}%)\n` +
+      `Available Slots: ${88 - count}\n` +
+      `Threshold Triggered: ${tier.threshold}%\n` +
+      `Time: ${new Date().toLocaleString('en-IE')}\n\n` +
+      `${tier.desc}\n\n` +
+      `━━━━━━━━━━━━━━━━━━━━━━\n` +
+      `All Freezer Status:\n` +
+      FREEZER_KEYS.map(fk => {
+        const c = countDrums(fk), p = Math.round((c/88)*100);
+        return `  ${freezers[fk].name}: ${c}/88 drums (${p}%)`;
+      }).join('\n') +
+      `\n\nTotal across all freezers: ${FREEZER_KEYS.reduce((s,fk)=>s+countDrums(fk),0)} / 264 drums\n\n` +
+      `━━━━━━━━━━━━━━━━━━━━━━\n` +
+      `This alert was generated by the Freezer Drum Location Tracker.\n` +
+      `Kinsale Site — Materials Management`
+    );
+    return `mailto:${ALERT_EMAIL}?subject=${subject}&body=${body}`;
+  }
+
+  function autoOpenAlertEmail(fname, count, pct, tier) {
+    const href = buildEmailHref(fname, count, pct, tier);
+    // Small delay so the UI renders first
+    setTimeout(() => {
+      window.open(href, '_blank');
+      showToast(`✉ Alert email prepared for ${fname} (${pct}%)`, 'error');
+    }, 500);
+  }
+
+  function dismissAlert(key) {
+    alertsDismissed[key] = true;
+    checkCapacityAlerts();
+  }
+
+  function countDrums(fk) {
+    let t=0;
+    for(const l of ['A','B']) for(let p=1;p<=11;p++) t+=freezers[fk].lanes[l]['P'+String(p).padStart(2,'0')].filter(s=>s!==null).length;
+    return t;
+  }
+
+  function getBatchCounts() {
+    const c={};
+    for(const fk of FREEZER_KEYS) for(const l of ['A','B']) for(let p=1;p<=11;p++) freezers[fk].lanes[l]['P'+String(p).padStart(2,'0')].forEach(s=>{if(s&&s.batch)c[s.batch]=(c[s.batch]||0)+1;});
+    return c;
+  }
+
+  function renderStats() {
+    const total=countDrums(currentFreezer);
+    const pct=Math.round((total/88)*100);
+    document.getElementById('statTotal').textContent=total;
+    document.getElementById('statCapacity').textContent=pct+'%';
+    document.getElementById('statAvail').textContent=88-total;
+    const batches=new Set();
+    const f=freezers[currentFreezer];
+    for(const l of ['A','B']) for(let p=1;p<=11;p++) f.lanes[l]['P'+String(p).padStart(2,'0')].forEach(s=>{if(s&&s.batch)batches.add(s.batch);});
+    document.getElementById('statBatches').textContent=batches.size;
+    const next=findNextPlacement();
+    if(next){document.getElementById('statNext').textContent=next.lane+'-'+next.pos;document.getElementById('statNextSub').textContent='Slot '+(next.slot+1);}
+    else{document.getElementById('statNext').textContent='FULL';document.getElementById('statNextSub').textContent='no space';}
+    document.getElementById('freezerMapTitle').textContent=freezers[currentFreezer].name+' — Floor Plan';
+    // All-freezers total
+    const allTotal=FREEZER_KEYS.reduce((s,fk)=>s+countDrums(fk),0);
+    const allAvail=264-allTotal;
+    document.getElementById('statAllAvail').textContent=allAvail;
+    document.getElementById('statAllAvailSub').textContent=`${allTotal} used of 264 (${Math.round((allTotal/264)*100)}%)`;
+  }
+
+  function renderBatchLegend() {
+    const el=document.getElementById('batchLegend');
+    const counts=getBatchCounts();
+    let html='<span class="bl-title">🎨 Batch Filter:</span>';
+    const batches=Object.keys(batchRegistry);
+    if(!batches.length){html+='<span style="font-size:0.75rem;color:var(--bold-gray);">No batches yet</span>';el.innerHTML=html;return;}
+    html+=`<div class="batch-chip ${!activeBatchFilter?'active-filter':''}" onclick="filterBatch(null)" style="background:var(--neutral-stone-tint);color:var(--lilly-black);"><span>All</span></div>`;
+    batches.forEach(b=>{
+      const c=batchRegistry[b].color,cnt=counts[b]||0,active=activeBatchFilter===b;
+      html+=`<div class="batch-chip ${active?'active-filter':''}" onclick="filterBatch('${b}')" style="background:${c}22;color:${c};"><div class="batch-dot" style="background:${c};width:10px;height:10px;border-radius:50%;"></div>${b} (${cnt}/5)</div>`;
+    });
+    el.innerHTML=html;
+  }
+
+  function filterBatch(name){activeBatchFilter=(activeBatchFilter===name)?null:name;render();}
+
+  function renderMap() {
+    let lbl='';for(let p=1;p<=11;p++)lbl+=`<span>P${String(p).padStart(2,'0')}</span>`;
+    document.getElementById('posLabels').innerHTML=lbl;
+    document.getElementById('posLabels2').innerHTML=lbl;
+    const next=findNextPlacement();
+    for(const lane of ['A','B']){
+      const container=document.getElementById('lane'+lane);
+      let html='';const f=freezers[currentFreezer].lanes[lane];
+      for(let p=1;p<=11;p++){
+        const pk='P'+String(p).padStart(2,'0'),slots=f[pk],count=slots.filter(s=>s!==null).length;
+        let cls='pallet-slot';
+        if(count===4)cls+=' full';else if(count>0)cls+=' has-drums';
+        if(next&&next.lane===lane&&next.pos===pk)cls+=' next-place';
+        let dhtml='';
+        for(let s=0;s<4;s++){
+          const drum=slots[s];
+          if(drum){
+            const isHL=highlightedDrum&&drum.su===highlightedDrum;
+            const color=getBatchColor(drum.batch);
+            const dim=activeBatchFilter&&drum.batch!==activeBatchFilter;
+            dhtml+=`<div class="drum-cell filled ${isHL?'highlight':''} ${dim?'dim':''}" style="background:${color};" onmouseenter="showTooltip(event,'${drum.su}\\nBatch: ${drum.batch||'—'}\\n${lane}-${pk}-S${s+1}')" onmouseleave="hideTooltip()" title="${drum.su} — ${drum.batch||'?'}">${drum.su.slice(-4)}</div>`;
+          } else dhtml+='<div class="drum-cell empty-drum">—</div>';
+        }
+        html+=`<div class="${cls}"><div class="slot-header">${pk}</div><div class="drum-grid">${dhtml}</div><div class="slot-count">${count}/4</div></div>`;
+      }
+      container.innerHTML=html;
+    }
+  }
+
+  function findNextPlacement(){
+    const f=freezers[currentFreezer].lanes;
+    for(let p=11;p>=1;p--){const pk='P'+String(p).padStart(2,'0');for(const l of ['A','B']){const i=f[l][pk].indexOf(null);if(i!==-1)return{lane:l,pos:pk,slot:i};}}
+    return null;
+  }
+
+  // ===== ACTIONS =====
+  function searchDrum(){
+    const su=document.getElementById('searchSU').value.trim().toUpperCase();
+    if(!su)return showToast('Please enter an SU number','error');
+    highlightedDrum=null;
+    const result=findDrumLocation(su);
+    const el=document.getElementById('searchResult');
+    if(result){
+      highlightedDrum=su;
+      const drum=freezers[currentFreezer].lanes[result.lane][result.pos][result.slot];
+      el.className='search-result found';
+      el.innerHTML=`<strong>✅ Found!</strong><br><strong>${su}</strong> (Batch: ${drum.batch||'—'}) is at <strong>Lane ${result.lane}, ${result.pos}, Slot ${result.slot+1}</strong><br>Address: <strong>${currentFreezer}-${result.lane}-${result.pos}-S${result.slot+1}</strong>`;
+    } else {
+      el.className='search-result not-found';
+      el.innerHTML=`<strong>❌ Not found</strong> in ${freezers[currentFreezer].name}. Try switching freezer or check the SU.`;
+    }
+    render();
+  }
+
+  function findDrumLocation(su){
+    const f=freezers[currentFreezer].lanes;
+    for(const l of ['A','B'])for(let p=1;p<=11;p++){const pk='P'+String(p).padStart(2,'0');const i=f[l][pk].findIndex(s=>s&&s.su===su);if(i!==-1)return{lane:l,pos:pk,slot:i};}
+    return null;
+  }
+
+  function placeDrum(){
+    const su=document.getElementById('placeSU').value.trim().toUpperCase();
+    if(!su)return showToast('Please enter an SU number','error');
+    let batch=document.getElementById('placeBatch').value;
+    if(batch==='__new__'){
+      batch=document.getElementById('customBatch').value.trim().toUpperCase();
+      if(!batch)return showToast('Please enter a batch number','error');
+      document.getElementById('customBatch').value='';
+      document.getElementById('customBatchGroup').style.display='none';
+    }
+    if(!batch)return showToast('Please select a batch','error');
+    if(findDrumLocation(su))return showToast(`${su} already in this freezer!`,'error');
+    getBatchColor(batch);
+    const next=findNextPlacement();
+    if(!next)return showToast('Freezer is FULL','error');
+    freezers[currentFreezer].lanes[next.lane][next.pos][next.slot]={su,batch};
+    const addr=`${next.lane}-${next.pos}-S${next.slot+1}`;
+    logMovement('IN',su,batch,addr);
+    document.getElementById('placeSU').value='';
+    highlightedDrum=su;
+    showToast(`✅ ${su} (${batch}) placed at ${addr}`,'success');
+    render();
+  }
+
+  function removeDrum(){
+    const su=document.getElementById('removeSU').value.trim().toUpperCase();
+    if(!su)return showToast('Please enter an SU number','error');
+    const loc=findDrumLocation(su);
+    if(!loc)return showToast(`${su} not found in this freezer`,'error');
+    const drum=freezers[currentFreezer].lanes[loc.lane][loc.pos][loc.slot];
+    freezers[currentFreezer].lanes[loc.lane][loc.pos][loc.slot]=null;
+    const addr=`${loc.lane}-${loc.pos}-S${loc.slot+1}`;
+    logMovement('OUT',su,drum.batch||'',addr);
+    document.getElementById('removeSU').value='';
+    highlightedDrum=null;
+    showToast(`📤 ${su} removed from ${addr}`,'info');
+    render();
+  }
+
+  // ===== LOG =====
+  function logMovement(action,su,batch,location){
+    movementLog.unshift({time:new Date().toLocaleString('en-IE'),action,su,batch,freezer:freezers[currentFreezer].name,location});
+    renderLog();
+  }
+  function renderLog(){
+    const body=document.getElementById('logBody');
+    if(!movementLog.length){body.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--bold-gray);padding:24px;">No movements logged yet</td></tr>';return;}
+    body.innerHTML=movementLog.map(m=>{
+      const c=getBatchColor(m.batch);
+      return `<tr><td>${m.time}</td><td><span class="badge ${m.action==='IN'?'badge-in':'badge-out'}">${m.action}</span></td><td><strong>${m.su}</strong></td><td><span style="display:inline-flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;border-radius:50%;background:${c};display:inline-block;"></span>${m.batch||'—'}</span></td><td>${m.freezer}</td><td>${m.location}</td></tr>`;
+    }).join('');
+  }
+  function exportLog(){
+    if(!movementLog.length)return showToast('No log entries','error');
+    let csv='Time,Action,SU Number,Batch,Freezer,Location\n';
+    movementLog.forEach(m=>{csv+=`"${m.time}","${m.action}","${m.su}","${m.batch}","${m.freezer}","${m.location}"\n`;});
+    const blob=new Blob([csv],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='drum_movement_log.csv';a.click();
+  }
+  function clearLog(){if(confirm('Clear all log entries?')){movementLog=[];renderLog();}}
+
+  // ===== SNAPSHOT =====
+  function generateSnapshotTable(){
+    const now=new Date().toLocaleString('en-IE');
+    document.getElementById('snapshotMeta').innerHTML=`<h3>📄 Snapshot Info</h3><p><strong>Freezer:</strong> ${freezers[currentFreezer].name} &nbsp;|&nbsp; <strong>Generated:</strong> ${now} &nbsp;|&nbsp; <strong>Drums:</strong> ${countDrums(currentFreezer)} / 88</p>`;
+    const body=document.getElementById('snapshotBody');
+    let html='',hasData=false;const f=freezers[currentFreezer].lanes;
+    for(const l of ['A','B'])for(let p=1;p<=11;p++){const pk='P'+String(p).padStart(2,'0');for(let s=0;s<4;s++){const drum=f[l][pk][s];if(drum){hasData=true;const c=getBatchColor(drum.batch);html+=`<tr><td><strong>${l}</strong></td><td>${pk}</td><td>S${s+1}</td><td><strong>${drum.su}</strong></td><td><span style="display:inline-flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;border-radius:50%;background:${c};display:inline-block;"></span>${drum.batch||'—'}</span></td></tr>`;}}}
+    if(!hasData)html='<tr><td colspan="5" style="text-align:center;color:var(--bold-gray);padding:24px;">Freezer is empty</td></tr>';
+    body.innerHTML=html;
+    // Batch breakdown
+    const counts={};
+    for(const l of ['A','B'])for(let p=1;p<=11;p++)f[l]['P'+String(p).padStart(2,'0')].forEach(s=>{if(s&&s.batch)counts[s.batch]=(counts[s.batch]||0)+1;});
+    let bd='<div style="display:flex;gap:14px;flex-wrap:wrap;">';
+    Object.keys(counts).forEach(b=>{const c=getBatchColor(b);bd+=`<div style="padding:10px 14px;background:${c}15;border:2px solid ${c};border-radius:8px;text-align:center;"><div style="font-weight:700;font-size:1.3rem;color:${c};">${counts[b]} / 5</div><div style="font-size:0.76rem;font-weight:600;color:${c};">${b}</div></div>`;});
+    bd+='</div>';
+    document.getElementById('snapshotBatchBreakdown').innerHTML=Object.keys(counts).length?bd:'<p style="color:var(--bold-gray);">No batches in this freezer.</p>';
+  }
+
+  // ===== DASHBOARD =====
+  function renderDashboard(){
+    const counts={};FREEZER_KEYS.forEach(fk=>{counts[fk]=countDrums(fk);});
+    const total=counts.F71+counts.F72+counts.F73;
+    ['F71','F72','F73'].forEach(fk=>{
+      const pct=Math.round((counts[fk]/88)*100);
+      document.getElementById('dash'+fk+'Pct').textContent=pct+'%';
+      document.getElementById('dash'+fk+'Count').textContent=counts[fk]+' / 88';
+    });
+    const totalPct=Math.round((total/264)*100);
+    document.getElementById('dashTotalPct').textContent=totalPct+'%';
+    document.getElementById('dashTotalCount').textContent=total+' / 264';
+    const todayStr=new Date().toLocaleDateString('en-IE');
+    document.getElementById('dashMovements').textContent=movementLog.filter(m=>m.time.startsWith(todayStr)).length;
+    const allAvail=264-total;
+    document.getElementById('dashAllAvail').textContent=allAvail;
+    document.getElementById('dashAllAvailSub').textContent=`${total} used of 264 (${totalPct}%)`;
+
+    renderGauge('gaugeF71',Math.round((counts.F71/88)*100),'#D31710');
+    renderGauge('gaugeF72',Math.round((counts.F72/88)*100),'#00422C');
+    renderGauge('gaugeF73',Math.round((counts.F73/88)*100),'#003A6C');
+    renderGauge('gaugeTotal',totalPct,'#B8860B');
+    renderBatchDist();
+    renderTrendChart();
+    renderHeatmap();
+  }
+
+  function renderGauge(id,pct,color){
+    const el=document.getElementById(id);
+    el.style.background=`conic-gradient(${color} ${pct*3.6}deg, var(--neutral-stone) ${pct*3.6}deg)`;
+    el.textContent=pct+'%';
+    el.style.color=pct>50?'white':'var(--lilly-black)';
+  }
+
+  function renderBatchDist(){
+    const counts=getBatchCounts();const container=document.getElementById('batchDistChart');
+    if(!Object.keys(counts).length){container.innerHTML='<p style="color:var(--bold-gray);text-align:center;">No batches stored.</p>';return;}
+    let html='';
+    Object.entries(counts).sort((a,b)=>b[1]-a[1]).forEach(([name,cnt])=>{
+      const c=getBatchColor(name),w=Math.max(12,(cnt/5)*100);
+      const complete=cnt===5;
+      html+=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;">
+        <div style="width:110px;font-size:0.72rem;font-weight:600;text-align:right;flex-shrink:0;color:${c};">${name}</div>
+        <div style="flex:1;background:var(--neutral-stone-tint);border-radius:4px;height:22px;overflow:hidden;">
+          <div style="width:${w}%;background:${c};height:100%;border-radius:4px;display:flex;align-items:center;justify-content:flex-end;padding-right:5px;">
+            <span style="font-size:0.66rem;font-weight:700;color:white;">${cnt}/5</span>
+          </div>
+        </div>
+        ${complete?'<span style="font-size:0.7rem;color:var(--bold-green);font-weight:700;">✓</span>':''}
+      </div>`;
+    });
+    container.innerHTML=html;
+  }
+
+  function renderTrendChart(){
+    const canvas=document.getElementById('trendChart');
+    const ctx=canvas.getContext('2d');
+    const dpr=window.devicePixelRatio||1;
+    const rect=canvas.parentElement.getBoundingClientRect();
+    canvas.width=rect.width*dpr;canvas.height=220*dpr;
+    canvas.style.width=rect.width+'px';canvas.style.height='220px';
+    ctx.scale(dpr,dpr);
+    const W=rect.width,H=220;
+    const pad={top:20,right:20,bottom:35,left:40};
+    const plotW=W-pad.left-pad.right,plotH=H-pad.top-pad.bottom;
+    ctx.clearRect(0,0,W,H);
+    ctx.strokeStyle='#e0e0e0';ctx.lineWidth=0.5;
+    for(let i=0;i<=4;i++){const y=pad.top+(plotH/4)*i;ctx.beginPath();ctx.moveTo(pad.left,y);ctx.lineTo(W-pad.right,y);ctx.stroke();ctx.fillStyle='#818C94';ctx.font='10px IBM Plex Sans';ctx.textAlign='right';ctx.fillText(Math.round(88-(88/4)*i),pad.left-6,y+3);}
+
+    const data=utilisationHistory,n=data.length,stepX=plotW/(n-1);
+    function drawLine(key,color){
+      ctx.beginPath();ctx.strokeStyle=color;ctx.lineWidth=2.5;ctx.lineJoin='round';
+      data.forEach((d,i)=>{const x=pad.left+i*stepX,y=pad.top+plotH-(d[key]/88)*plotH;i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);});
+      ctx.stroke();
+      data.forEach((d,i)=>{const x=pad.left+i*stepX,y=pad.top+plotH-(d[key]/88)*plotH;ctx.beginPath();ctx.arc(x,y,3,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();});
+    }
+    drawLine('f71','#D31710');drawLine('f72','#00422C');drawLine('f73','#003A6C');
+
+    ctx.fillStyle='#818C94';ctx.font='9px IBM Plex Sans';ctx.textAlign='center';
+    data.forEach((d,i)=>{if(i%2===0||i===n-1)ctx.fillText(d.date,pad.left+i*stepX,H-8);});
+
+    // Legend
+    const lx=W-260;
+    [{c:'#D31710',l:'F71'},{c:'#00422C',l:'F72'},{c:'#003A6C',l:'F73'}].forEach((item,i)=>{
+      const ox=lx+i*85;
+      ctx.fillStyle=item.c;ctx.fillRect(ox,6,12,12);ctx.fillStyle='#191919';ctx.font='10px IBM Plex Sans';ctx.textAlign='left';ctx.fillText('Freezer '+item.l.slice(1),ox+16,16);
+    });
+  }
+
+  function renderHeatmap(){
+    const container=document.getElementById('heatmapContainer');
+    let html='';
+    FREEZER_KEYS.forEach(fk=>{
+      html+=`<div style="margin-bottom:10px;"><div style="font-size:0.78rem;font-weight:700;margin-bottom:3px;">${freezers[fk].name}</div>`;
+      for(const l of ['A','B']){
+        html+=`<div style="display:flex;align-items:center;gap:3px;margin-bottom:2px;"><span style="font-size:0.68rem;font-weight:600;width:18px;color:var(--bold-gray);">${l}</span>`;
+        for(let p=1;p<=11;p++){
+          const pk='P'+String(p).padStart(2,'0'),count=freezers[fk].lanes[l][pk].filter(s=>s!==null).length;
+          const intensity=count/4;
+          const r=Math.round(211*intensity),g=Math.round(23*intensity),b=Math.round(16*intensity);
+          const bg=count===0?'var(--neutral-stone-tint)':`rgba(${r},${g},${b},${0.2+intensity*0.8})`;
+          const tc=intensity>0.5?'white':'var(--lilly-black)';
+          html+=`<div style="flex:1;height:24px;background:${bg};border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:0.55rem;font-weight:600;color:${tc};border:1px solid ${count?'transparent':'var(--neutral-stone)'};">${count>0?count:''}</div>`;
+        }
+        html+='</div>';
+      }
+      html+='</div>';
+    });
+    html+='<div style="display:flex;gap:3px;margin-left:21px;">';
+    for(let p=1;p<=11;p++)html+=`<div style="flex:1;text-align:center;font-size:0.55rem;color:var(--bold-gray);font-weight:600;">P${String(p).padStart(2,'0')}</div>`;
+    html+='</div>';
+    container.innerHTML=html;
+  }
+
+  // ===== UI =====
+  function switchFreezer(){currentFreezer=document.getElementById('freezerSelect').value;highlightedDrum=null;activeBatchFilter=null;document.getElementById('searchResult').className='search-result';render();}
+  function switchTab(name){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));event.target.classList.add('active');document.getElementById('tab-'+name).classList.add('active');if(name==='snapshot')generateSnapshotTable();if(name==='dashboard')setTimeout(renderDashboard,50);}
+  function showToast(msg,type){const el=document.getElementById('toast');el.textContent=msg;el.className='toast '+type+' show';setTimeout(()=>el.classList.remove('show'),3000);}
+  function showTooltip(e,text){const el=document.getElementById('tooltip');el.innerHTML=text.replace(/\\n/g,'<br>');el.style.display='block';el.style.left=e.clientX-20+'px';el.style.top=e.clientY-el.offsetHeight-14+'px';}
+  function hideTooltip(){document.getElementById('tooltip').style.display='none';}
+
+  render();renderLog();
+</script>
+</body>
+</html>
